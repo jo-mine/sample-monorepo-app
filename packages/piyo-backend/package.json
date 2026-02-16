@@ -1,0 +1,24 @@
+{
+  "name": "@jo-mine/piyo-backend",
+  "type": "module",
+  "module": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "clean": "rm -rf dist",
+    "build:types": "tsc --declaration --emitDeclarationOnly src/index.ts --outDir ./dist",
+    "build": "bun run clean && npm run build:types && bun build src/index.ts --outdir=dist"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "@jo-mine/sample-micro-services-hoge": "^0.0.3",
+    "hono": "^4.11.9",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

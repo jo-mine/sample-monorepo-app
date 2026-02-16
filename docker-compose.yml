@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: dockerfile
+      dockerfile: app.Dockerfile
+    image: sample-monorepo-app-image
+    container_name: sample-monorepo-app-container
+    volumes:
+      - .:/app:cached
+    # command: bun run dev
+    tty: true
+    entrypoint: /bin/sh
+  backend:
+    image: sample-monorepo-app-image
+    container_name: sample-monorepo-backend-container
+    volumes:
+      - .:/app:cached
+    working_dir: /app/packages/piyo-backend
+    command: bun run dev
+    ports:
+      - "3001:3000"
+  frontend:
+    image: sample-monorepo-app-image
+    container_name: sample-monorepo-frontend-container
+    volumes:
+      - .:/app:cached
+    working_dir: /app/packages/piyo-frontend
+    command: bun run dev
+    ports:
+      - "3000:3000"

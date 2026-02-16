@@ -1,0 +1,9 @@
+{
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --workspaces build",
+    "dev": "bun run --workspaces dev"
+  }
+}
