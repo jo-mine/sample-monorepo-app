@@ -25,12 +25,27 @@
     "packages/piyo-frontend": {
       "name": "piyo-frontend",
       "dependencies": {
-        "@jo-mine/piyo-backend": "workspace:*",
         "@jo-mine/sample-micro-services-hoge": "^0.0.3",
         "hono": "^4.11.9",
         "nuxt": "^4.3.1",
         "vue": "^3.5.28",
         "vue-router": "^4.6.4",
+      },
+      "devDependencies": {
+        "@jo-mine/anon-backend": "workspace:*",
+        "@jo-mine/piyo-backend": "workspace:*",
+      },
+    },
+    "submodules/sample-dependency-app/packages/anon-backend": {
+      "name": "@jo-mine/anon-backend",
+      "dependencies": {
+        "hono": "^4.11.9",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
       },
     },
   },
@@ -182,6 +197,8 @@
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA=="],
 
     "@isaacs/fs-minipass": ["@isaacs/fs-minipass@4.0.1", "", { "dependencies": { "minipass": "^7.0.4" } }, "sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w=="],
+
+    "@jo-mine/anon-backend": ["@jo-mine/anon-backend@workspace:submodules/sample-dependency-app/packages/anon-backend"],
 
     "@jo-mine/piyo-backend": ["@jo-mine/piyo-backend@workspace:packages/piyo-backend"],
 

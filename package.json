@@ -1,6 +1,7 @@
 {
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "submodules/*/packages/*"
   ],
   "scripts": {
     "build": "bun run --workspaces build",
