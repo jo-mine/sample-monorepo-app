@@ -12,6 +12,8 @@ import { hc } from "hono/client";
 console.log(hoge());
 const client = hc<App>("http://localhost:3001");
 client.users.$get().then((res) => {
-  console.log(res);
+  res.json().then((data) => {
+    console.log(data);
+  });
 });
 </script>

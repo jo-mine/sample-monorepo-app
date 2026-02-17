@@ -1,9 +1,13 @@
 import { zValidator } from "@hono/zod-validator";
 import { hoge } from "@jo-mine/sample-micro-services-hoge";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { z } from "zod";
 
 const app = new Hono()
+  .use("*", cors({
+    origin: "*",
+  }))
   .get("/", (c) => {
     return c.text("Hello Hono!");
   })
