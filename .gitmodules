@@ -1,0 +1,3 @@
+[submodule "submodules/sample-dependency-app"]
+	path = submodules/sample-dependency-app
+	url = https://github.com/jo-mine/sample-dependency-app.git
