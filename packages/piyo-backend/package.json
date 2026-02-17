@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "clean": "rm -rf dist",
-    "build:types": "tsc --declaration --emitDeclarationOnly src/index.ts --outDir ./dist",
+    "build:types": "tsc --skipLibCheck --declaration --emitDeclarationOnly src/index.ts --outDir ./dist",
     "build": "bun run clean && npm run build:types && bun build src/index.ts --outdir=dist"
   },
   "dependencies": {
