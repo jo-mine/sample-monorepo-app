@@ -5,5 +5,8 @@
   "scripts": {
     "build": "bun run --workspaces build",
     "dev": "bun run --workspaces dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.2"
   }
 }
