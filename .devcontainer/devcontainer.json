@@ -17,7 +17,9 @@
 		"vscode": {
 			"extensions": [
 				"mhutchie.git-graph",
-				"Vue.volar"
+				"Vue.volar",
+				"biomejs.biome",
+				"EditorConfig.EditorConfig"
 			]
 		}
 	}
