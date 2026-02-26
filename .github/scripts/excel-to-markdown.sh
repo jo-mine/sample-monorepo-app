@@ -169,7 +169,7 @@ convert_to_markdown() {
         next
     }
 
-    # 番号付きリスト（数字. または 数字）で始まる行）
+    # 番号付きリスト（数字. または 数字）で始まる行
     /^[[:space:]]*[0-9]+[\.\)][[:space:]]/ {
         if (in_table) {
             flush_table()
