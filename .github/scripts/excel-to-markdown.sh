@@ -144,7 +144,7 @@ convert_to_markdown() {
     }
 
     # 大文字のみ（または短い行）は見出しと推定
-    /^[[:upper:][:space:][:punct:][:digit:]]{1,60}$/ && length($0) < 60 && $0 ~ /[[:upper:]]/ {
+    /^[[:upper:][:space:][:punct:][:digit:]]+$/ && length($0) < 60 && $0 ~ /[[:upper:]]/ {
         if (in_table) {
             flush_table()
             in_table = 0
