@@ -1,6 +1,12 @@
 #!/bin/bash
 # Excel設計書をMarkdownに変換するスクリプト
 # 使用方法: ./excel-to-markdown.sh <Excelファイルパス>
+#
+# 処理概要:
+#   1. LibreOfficeでExcel → PDF変換
+#   2. pdftoppmでPDF → PNG画像（ページ毎）変換
+#   3. 生成された画像パスを標準出力に出力する
+#      → エージェントが画像を視覚的に解析してMarkdownを生成する
 
 set -euo pipefail
 
@@ -44,10 +50,10 @@ if ! command -v libreoffice &> /dev/null; then
 fi
 
 # ---------------------------------------------------------------------------
-# pdftotextの存在確認
+# pdftoppmの存在確認
 # ---------------------------------------------------------------------------
-if ! command -v pdftotext &> /dev/null; then
-    echo "エラー: pdftotextがインストールされていません。" >&2
+if ! command -v pdftoppm &> /dev/null; then
+    echo "エラー: pdftoppmがインストールされていません。" >&2
     echo "インストール方法（Debian/Ubuntu）: sudo apt-get install -y poppler-utils" >&2
     exit 1
 fi
@@ -71,6 +77,7 @@ FILENAME="${BASENAME%.*}"
 
 PDF_OUTPUT="${WORK_DIR}/${FILENAME}.pdf"
 MD_OUTPUT="${WORK_DIR}/${FILENAME}.md"
+IMAGE_PREFIX="${WORK_DIR}/${FILENAME}"
 
 # ---------------------------------------------------------------------------
 # LibreOfficeでExcel → PDF変換
@@ -90,154 +97,33 @@ fi
 echo "PDF変換完了: $PDF_OUTPUT"
 
 # ---------------------------------------------------------------------------
-# pdftotextでPDF → テキスト抽出
+# pdftoppmでPDF → PNG画像（ページ毎）変換
+# 解像度150dpiで各ページをPNG画像として出力する
 # ---------------------------------------------------------------------------
-echo "PDFからテキストを抽出中..."
-if ! RAW_TEXT="$(pdftotext -layout "$PDF_OUTPUT" -)"; then
-    echo "エラー: PDFからのテキスト抽出に失敗しました: $PDF_OUTPUT" >&2
+echo "PDFをページ画像に変換中..."
+if ! pdftoppm -png -r 150 "$PDF_OUTPUT" "$IMAGE_PREFIX"; then
+    echo "エラー: PDF→画像変換に失敗しました: $PDF_OUTPUT" >&2
     exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# テキスト → Markdown変換
+# 生成された画像ファイル一覧を取得して標準出力に出力する
+# エージェントがこれらの画像を視覚的に解析してMarkdownを生成する
 # ---------------------------------------------------------------------------
-echo "Markdownに変換中..."
+IMAGE_FILES=()
+while IFS= read -r -d '' img; do
+    IMAGE_FILES+=("$img")
+done < <(find "$WORK_DIR" -name "${FILENAME}-*.png" -print0 | sort -z)
 
-convert_to_markdown() {
-    local text="$1"
+if [ ${#IMAGE_FILES[@]} -eq 0 ]; then
+    echo "エラー: ページ画像が生成されませんでした。" >&2
+    exit 1
+fi
 
-    # awk で行ごとに処理しMarkdownへ整形する
-    echo "$text" | awk '
-    BEGIN {
-        in_table = 0
-        table_lines[0] = ""
-        table_count = 0
-    }
+echo "ページ画像の生成完了: ${#IMAGE_FILES[@]}ページ"
 
-    # 改ページ（^L）は水平線に変換
-    /\f/ {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        print "\n---\n"
-        next
-    }
-
-    # 空行の処理
-    /^[[:space:]]*$/ {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        print ""
-        next
-    }
-
-    # タブ区切りの行はテーブル候補
-    /\t/ {
-        table_lines[table_count++] = $0
-        in_table = 1
-        next
-    }
-
-    # 大文字のみ（または短い行）は見出しと推定
-    /^[[:upper:][:space:][:punct:][:digit:]]+$/ && length($0) < 60 && $0 ~ /[[:upper:]]/ {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "")
-        if (length($0) > 0) {
-            print "## " $0
-        }
-        next
-    }
-
-    # 箇条書き（・、●、○、*、- で始まる行）
-    /^[[:space:]]*[・●○\*\-]/ {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        gsub(/^[[:space:]]*[・●○\*\-][[:space:]]*/, "")
-        print "- " $0
-        next
-    }
-
-    # 番号付きリスト（数字. または 数字）で始まる行
-    /^[[:space:]]*[0-9]+[\.\)][[:space:]]/ {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        print $0
-        next
-    }
-
-    # その他の行はそのまま出力
-    {
-        if (in_table) {
-            flush_table()
-            in_table = 0
-            table_count = 0
-        }
-        print $0
-    }
-
-    END {
-        if (in_table) {
-            flush_table()
-        }
-    }
-
-    # テーブル行をMarkdownテーブルとして出力する関数
-    function flush_table(    i, j, cols, ncols, sep, row) {
-        if (table_count == 0) return
-
-        for (i = 0; i < table_count; i++) {
-            row = table_lines[i]
-            gsub(/^[[:space:]]+|[[:space:]]+$/, "", row)
-            ncols = split(row, cols, /\t/)
-            printf "|"
-            for (j = 1; j <= ncols; j++) {
-                gsub(/^[[:space:]]+|[[:space:]]+$/, "", cols[j])
-                printf " %s |", cols[j]
-            }
-            print ""
-            # ヘッダー行の直後にセパレータを挿入
-            if (i == 0) {
-                printf "|"
-                for (j = 1; j <= ncols; j++) {
-                    printf " --- |"
-                }
-                print ""
-            }
-        }
-        # テーブル配列をリセット
-        for (k = 0; k < table_count; k++) {
-            delete table_lines[k]
-        }
-        table_count = 0
-    }
-    '
-}
-
-MARKDOWN_CONTENT="$(convert_to_markdown "$RAW_TEXT")"
-
-# ---------------------------------------------------------------------------
-# Markdownファイルに書き出し
-# ---------------------------------------------------------------------------
-{
-    echo "# ${FILENAME}"
-    echo ""
-    echo "$MARKDOWN_CONTENT"
-} > "$MD_OUTPUT"
-
-echo "Markdown変換完了: $MD_OUTPUT"
-echo "$MD_OUTPUT"
+# 出力先Markdownパスと生成画像パス一覧を標準出力に出力する
+echo "MARKDOWN_OUTPUT=${MD_OUTPUT}"
+for img in "${IMAGE_FILES[@]}"; do
+    echo "PAGE_IMAGE=${img}"
+done

@@ -33,5 +33,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
-# GitHub work directory - temporary PDF files (intermediate artifacts)
+# GitHub work directory - temporary PDF and PNG files (intermediate artifacts)
 .github/work/*.pdf
+.github/work/*.png
