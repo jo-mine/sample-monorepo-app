@@ -197,7 +197,7 @@ convert_to_markdown() {
     }
 
     # テーブル行をMarkdownテーブルとして出力する関数
-    function flush_table(    i, cols, ncols, sep, row) {
+    function flush_table(    i, j, cols, ncols, sep, row) {
         if (table_count == 0) return
 
         for (i = 0; i < table_count; i++) {
