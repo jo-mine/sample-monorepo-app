@@ -136,6 +136,19 @@ PDF_OUTPUT="${WORK_DIR}/${FILENAME}.pdf"
 MD_OUTPUT="${WORK_DIR}/${FILENAME}.md"
 IMAGE_PREFIX="${WORK_DIR}/${FILENAME}"
 
+# ---------------------------------------------------------------------------
+# 旧成果物のクリーンアップ（同一ファイル名の前回実行分を削除）
+# ---------------------------------------------------------------------------
+# 古い PNG 画像を削除（同じ FILENAME に対応するもののみ）
+find "$WORK_DIR" -maxdepth 1 -type f -name "${FILENAME}-*.png" -delete 2>/dev/null || true
+
+# 古い PDF/Markdown 出力が存在する場合は削除
+if [[ -f "$PDF_OUTPUT" ]]; then
+    rm -f "$PDF_OUTPUT"
+fi
+if [[ -f "$MD_OUTPUT" ]]; then
+    rm -f "$MD_OUTPUT"
+fi
 # 一時ファイルの自動クリーンアップ
 TEMP_XLSX=""
 cleanup() {
