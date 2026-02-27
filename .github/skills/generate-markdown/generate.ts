@@ -158,6 +158,10 @@ function main(): void {
     console.error('Error: Invalid JSON structure. Expected a "sheets" array.');
     process.exit(1);
   }
+  if (specData.sheets.length === 0) {
+    console.error('Error: Invalid JSON structure. "sheets" array must contain at least one sheet.');
+    process.exit(1);
+  }
 
   // Markdown生成
   const markdown = renderSpecData(specData);
