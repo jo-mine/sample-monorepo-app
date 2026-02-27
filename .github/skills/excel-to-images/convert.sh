@@ -53,6 +53,18 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
+# python3がインストールされていない場合はエラー
+if ! command -v python3 &>/dev/null; then
+  echo "Error: python3 is not installed. Please install Python 3." >&2
+  exit 1
+fi
+
+# openpyxlがインストールされていない場合はエラー
+if ! python3 -c "import openpyxl" 2>/dev/null; then
+  echo "Error: openpyxl is not installed. Please install it: pip install openpyxl" >&2
+  exit 1
+fi
+
 # ===== 変換処理 =====
 
 # 出力ディレクトリを作成（存在しない場合）
@@ -62,12 +74,38 @@ mkdir -p "$OUTPUT_DIR"
 INPUT_ABS="$(realpath "$INPUT_PATH")"
 OUTPUT_ABS="$(realpath "$OUTPUT_DIR")"
 
-# ファイル名（拡張子なし）を取得
-BASENAME="$(basename "$INPUT_ABS" .xlsx)"
+# ファイル名（拡張子なし）を取得（.xlsx / .xls どちらの拡張子にも対応）
+BASENAME="$(basename "$INPUT_ABS")"
+BASENAME="${BASENAME%.*}"
+
+# Step 0: Python + openpyxl で指定シートのみを含む一時ファイルを作成して変換対象を絞る
+TMPDIR_CONV="$(mktemp -d)"
+TMPFILE="$TMPDIR_CONV/${BASENAME}.xlsx"
+trap 'rm -rf "$TMPDIR_CONV"' EXIT
+
+echo "Extracting sheets: ${SHEETS[*]}" >&2
+python3 - "$INPUT_ABS" "$TMPFILE" "${SHEETS[@]}" << 'PYEOF'
+import openpyxl, sys
+
+src, dst, *requested = sys.argv[1:]
+wb = openpyxl.load_workbook(src, data_only=True)
+missing = [s for s in requested if s not in wb.sheetnames]
+if missing:
+    print(f"Warning: Sheet(s) not found and will be skipped: {', '.join(missing)}", file=sys.stderr)
+for name in list(wb.sheetnames):
+    if name not in requested:
+        del wb[name]
+if not wb.sheetnames:
+    print("Error: None of the specified sheets were found in the workbook.", file=sys.stderr)
+    sys.exit(1)
+wb.save(dst)
+PYEOF
+
+CONVERT_INPUT="$TMPFILE"
 
 # Step 1: LibreOffice CLI で Excel → PDF 変換
-echo "Converting Excel to PDF: $INPUT_ABS" >&2
-libreoffice --headless --convert-to pdf --outdir "$OUTPUT_ABS" "$INPUT_ABS" >&2
+echo "Converting Excel to PDF: $CONVERT_INPUT" >&2
+libreoffice --headless --convert-to pdf --outdir "$OUTPUT_ABS" "$CONVERT_INPUT" >&2
 
 PDF_PATH="$OUTPUT_ABS/${BASENAME}.pdf"
 

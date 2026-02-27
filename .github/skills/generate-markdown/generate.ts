@@ -84,6 +84,16 @@ function headingForLevel(level: number): string {
 }
 
 /**
+ * Markdownテーブルのセル値をエスケープする。
+ * パイプ（|）はHTMLエンティティ（&#124;）に変換し、改行は <br> に変換する。
+ * バックスラッシュエスケープの代わりにHTMLエンティティを使うことで、
+ * 入力にバックスラッシュが含まれる場合の二重エスケープ問題を回避する。
+ */
+function escapeMdCell(val: string): string {
+  return val.replace(/\|/g, "&#124;").replace(/\r?\n/g, "<br>");
+}
+
+/**
  * コンテンツノードをMarkdown文字列に変換する
  */
 function renderNode(node: ContentNode): string {
@@ -115,10 +125,10 @@ function renderNode(node: ContentNode): string {
 
       const columnCount = headers.length;
       const separator = Array(columnCount).fill("---").join(" | ");
-      const headerRow = headers.join(" | ");
+      const headerRow = headers.map(escapeMdCell).join(" | ");
 
       const rowLines = rows.map((row) => {
-        const cells = row.cells.slice(0, columnCount);
+        const cells = row.cells.slice(0, columnCount).map(escapeMdCell);
         // 列数をヘッダーに合わせて補完
         while (cells.length < columnCount) cells.push("");
 
@@ -167,8 +177,8 @@ function renderNode(node: ContentNode): string {
       }
 
       const separator = Array(columnCount).fill("---").join(" | ");
-      const headerRow = headers.join(" | ");
-      const rowLines = normalizedRows.map((row) => row.join(" | "));
+      const headerRow = headers.map(escapeMdCell).join(" | ");
+      const rowLines = normalizedRows.map((row) => row.map(escapeMdCell).join(" | "));
 
       return [
         `| ${headerRow} |`,

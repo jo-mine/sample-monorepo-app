@@ -53,6 +53,7 @@ LibreOffice CLI を使用して、Excelファイルの指定シートをPNG画�
 
 - **LibreOffice**（`libreoffice` コマンドが利用可能であること）
 - **jq**（JSON出力生成に使用）
+- **Python 3** + **openpyxl**（指定シートのみの抽出に使用）
 
 ### LibreOffice のインストール（Ubuntu/Debian）
 
@@ -64,6 +65,12 @@ sudo apt-get install libreoffice
 
 ```bash
 sudo apt-get install jq
+```
+
+### openpyxl のインストール
+
+```bash
+pip install openpyxl
 ```
 
 ## 使用例
@@ -88,3 +95,6 @@ sudo apt-get install jq
 | `Error: Input file not found` | ファイルが存在しない | ファイルパスを確認 |
 | `Error: libreoffice is not installed` | LibreOffice未インストール | LibreOfficeをインストール |
 | `Error: jq is not installed` | jq未インストール | jqをインストール |
+| `Error: python3 is not installed` | Python 3未インストール | Python 3をインストール |
+| `Error: openpyxl is not installed` | openpyxl未インストール | `pip install openpyxl` でインストール |
+| `Error: None of the specified sheets were found in the workbook.` | 指定シートがExcelに存在しない | シート名を確認 |
