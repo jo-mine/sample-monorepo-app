@@ -45,7 +45,7 @@ description: Converts Japanese Excel 方眼紙 (grid-style) specification sheets
 |-----------|------|---------|
 | **赤文字のセル** | 必須項目（目安：R > 180, G < 100, B < 100） | `"required": true` |
 | **セルの列位置（インデント）** | 階層の深さ | `"level": <数値>` |
-| **緑背景行** | テーブルのヘッダー行 | `"type": "table-header"` |
+| **緑背景行** | テーブルのヘッダー行 | 対応する `"type": "table"` ノードの `"headers"` 配列として表現する |
 | **セル結合** | 見出しや区切り | `"type": "section"` |
 | **罫線で囲まれた表** | テーブル構造 | `"type": "table"` |
 

@@ -18,11 +18,13 @@ OUTPUT_DIR="$2"
 shift 2
 SHEETS=("$@")
 
-# シート名が1つも指定されていない場合はエラー
-if [ ${#SHEETS[@]} -eq 0 ]; then
-  echo "Error: No sheet names specified. Please provide at least one sheet name." >&2
-  exit 1
-fi
+# シート名に制御文字が含まれていないか検証
+for sheet in "${SHEETS[@]}"; do
+  if printf '%s' "$sheet" | grep -qP '[\x00-\x1f\x7f]'; then
+    echo "Error: Sheet name contains control characters: $(printf '%s' "$sheet" | cat -v)" >&2
+    exit 1
+  fi
+done
 
 # 入力ファイルが存在しない場合はエラー
 if [ ! -f "$INPUT_PATH" ]; then
@@ -75,6 +77,12 @@ libreoffice --headless --convert-to png --outdir "$OUTPUT_ABS" "$PDF_PATH" >&2
 # Step 3: 生成されたPNGファイルの一覧を収集（maxdepth 1 で直下のみ）
 mapfile -t IMAGE_PATHS < <(find "$OUTPUT_ABS" -maxdepth 1 -name "*.png" | sort)
 
+# PNGが1つも生成されていない場合はエラー
+if [ ${#IMAGE_PATHS[@]} -eq 0 ]; then
+  echo "Error: PNG conversion produced no output files in: $OUTPUT_ABS" >&2
+  exit 1
+fi
+
 # ===== JSON出力 =====
 # 結果をJSONとして標準出力（Copilot Agentが読み取る）
 
@@ -82,11 +90,7 @@ mapfile -t IMAGE_PATHS < <(find "$OUTPUT_ABS" -maxdepth 1 -name "*.png" | sort)
 SHEETS_JSON="$(printf '%s\n' "${SHEETS[@]}" | jq -R . | jq -s .)"
 
 # 画像パスの配列をJSON配列に変換
-if [ ${#IMAGE_PATHS[@]} -eq 0 ]; then
-  IMAGES_JSON="[]"
-else
-  IMAGES_JSON="$(printf '%s\n' "${IMAGE_PATHS[@]}" | jq -R . | jq -s .)"
-fi
+IMAGES_JSON="$(printf '%s\n' "${IMAGE_PATHS[@]}" | jq -R . | jq -s .)"
 
 # 最終的なJSON出力
 jq -n \

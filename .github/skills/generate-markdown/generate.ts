@@ -86,11 +86,38 @@ function renderNode(node: ContentNode): string {
     }
 
     case "table": {
-      if (node.headers.length === 0) return "";
-      const separator = node.headers.map(() => "---").join(" | ");
-      const headerRow = node.headers.join(" | ");
-      const rows = node.rows.map((row) => row.join(" | "));
-      return [`| ${headerRow} |`, `| ${separator} |`, ...rows.map((r) => `| ${r} |`)].join("\n");
+      const headers = node.headers;
+      const rows = node.rows;
+      if (!headers || headers.length === 0 || !rows || rows.length === 0) {
+        return "";
+      }
+
+      const columnCount = headers.length;
+
+      // 行の列数をヘッダーに合わせて正規化
+      const normalizedRows = rows
+        .filter((row) => Array.isArray(row) && row.length > 0)
+        .map((row) => {
+          const truncated = row.slice(0, columnCount);
+          if (truncated.length < columnCount) {
+            return truncated.concat(Array(columnCount - truncated.length).fill(""));
+          }
+          return truncated;
+        });
+
+      if (normalizedRows.length === 0) {
+        return "";
+      }
+
+      const separator = Array(columnCount).fill("---").join(" | ");
+      const headerRow = headers.join(" | ");
+      const rowLines = normalizedRows.map((row) => row.join(" | "));
+
+      return [
+        `| ${headerRow} |`,
+        `| ${separator} |`,
+        ...rowLines.map((r) => `| ${r} |`),
+      ].join("\n");
     }
 
     case "text": {
