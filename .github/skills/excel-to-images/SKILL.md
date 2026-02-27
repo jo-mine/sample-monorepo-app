@@ -84,7 +84,7 @@ sudo apt-get install jq
 | エラー | 原因 | 対処法 |
 |--------|------|--------|
 | `Usage: ...` | 引数が3つ未満 | 引数を正しく指定 |
-| `Error: No sheet names specified.` | シート名が未指定 | シート名を1つ以上指定 |
+| `Error: At least one sheet name must be specified.` | シート名が未指定 | シート名を1つ以上指定 |
 | `Error: Input file not found` | ファイルが存在しない | ファイルパスを確認 |
 | `Error: libreoffice is not installed` | LibreOffice未インストール | LibreOfficeをインストール |
 | `Error: jq is not installed` | jq未インストール | jqをインストール |
