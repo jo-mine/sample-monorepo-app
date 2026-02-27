@@ -1,6 +1,11 @@
 #!/bin/bash
 # Excel設計書をMarkdownに変換するスクリプト
-# 使用方法: ./excel-to-markdown.sh <Excelファイルパス>
+# 使用方法: ./excel-to-markdown.sh [-s シート名 ...] <Excelファイルパス>
+#
+# オプション:
+#   -s, --sheet <シート名>  変換対象のシートを指定する（複数指定可）
+#                           省略した場合はすべてのシートを変換する
+#                           ※ .xlsx ファイルのみサポート（python3 と openpyxl が必要）
 #
 # 処理概要:
 #   1. LibreOfficeでExcel → PDF変換
@@ -11,14 +16,41 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 引数チェック
+# 引数パース
 # ---------------------------------------------------------------------------
-if [ $# -lt 1 ]; then
-    echo "使用方法: $0 <Excelファイルパス>" >&2
+SHEET_NAMES=()
+INPUT_FILE=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s|--sheet)
+            if [[ $# -lt 2 ]]; then
+                echo "エラー: -s/--sheet オプションにはシート名が必要です。" >&2
+                exit 1
+            fi
+            SHEET_NAMES+=("$2")
+            shift 2
+            ;;
+        -*)
+            echo "エラー: 不明なオプション: $1" >&2
+            echo "使用方法: $0 [-s シート名 ...] <Excelファイルパス>" >&2
+            exit 1
+            ;;
+        *)
+            if [[ -n "$INPUT_FILE" ]]; then
+                echo "エラー: 入力ファイルが複数指定されています。" >&2
+                exit 1
+            fi
+            INPUT_FILE="$1"
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$INPUT_FILE" ]]; then
+    echo "使用方法: $0 [-s シート名 ...] <Excelファイルパス>" >&2
     exit 1
 fi
-
-INPUT_FILE="$1"
 
 # ---------------------------------------------------------------------------
 # 入力ファイルの存在確認
@@ -59,6 +91,27 @@ if ! command -v pdftoppm &> /dev/null; then
 fi
 
 # ---------------------------------------------------------------------------
+# シートフィルタリング使用時の追加確認
+# ---------------------------------------------------------------------------
+if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
+    case "$INPUT_FILE" in
+        *.xls)
+            echo "エラー: シートフィルタリングは .xlsx 形式のみサポートしています。.xlsx に変換してから再実行してください。" >&2
+            exit 1
+            ;;
+    esac
+    if ! command -v python3 &> /dev/null; then
+        echo "エラー: シートフィルタリングには python3 が必要です。" >&2
+        exit 1
+    fi
+    if ! python3 -c "import openpyxl" 2>/dev/null; then
+        echo "エラー: シートフィルタリングには openpyxl が必要です。" >&2
+        echo "インストール方法: pip install openpyxl" >&2
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # プロジェクトルートを自動検出
 # ---------------------------------------------------------------------------
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -79,19 +132,74 @@ PDF_OUTPUT="${WORK_DIR}/${FILENAME}.pdf"
 MD_OUTPUT="${WORK_DIR}/${FILENAME}.md"
 IMAGE_PREFIX="${WORK_DIR}/${FILENAME}"
 
+# 一時ファイルの自動クリーンアップ
+TEMP_XLSX=""
+cleanup() {
+    if [[ -n "${TEMP_XLSX}" && -f "${TEMP_XLSX}" ]]; then
+        rm -f "${TEMP_XLSX}"
+    fi
+}
+trap cleanup EXIT
+
+# ---------------------------------------------------------------------------
+# シートフィルタリング: 指定シートのみを含む一時 .xlsx を作成
+# ---------------------------------------------------------------------------
+CONVERT_FILE="$INPUT_FILE"
+if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
+    TEMP_XLSX="${TMPDIR:-/tmp}/excel-to-md-$$.xlsx"
+    echo "シートフィルタリング中: ${SHEET_NAMES[*]}"
+    if ! python3 - "$INPUT_FILE" "$TEMP_XLSX" "${SHEET_NAMES[@]}" << 'PYEOF'
+import sys
+import openpyxl
+
+src_path = sys.argv[1]
+dst_path = sys.argv[2]
+targets  = sys.argv[3:]
+
+wb        = openpyxl.load_workbook(src_path)
+available = wb.sheetnames
+missing   = [s for s in targets if s not in available]
+
+if missing:
+    print(f"エラー: 指定されたシートが見つかりません: {', '.join(missing)}", file=sys.stderr)
+    print(f"利用可能なシート: {', '.join(available)}", file=sys.stderr)
+    sys.exit(1)
+
+for name in wb.sheetnames:
+    if name not in targets:
+        del wb[name]
+
+wb.save(dst_path)
+PYEOF
+    then
+        echo "エラー: シートのフィルタリングに失敗しました。" >&2
+        exit 1
+    fi
+    CONVERT_FILE="$TEMP_XLSX"
+    echo "シートフィルタリング完了: ${SHEET_NAMES[*]}"
+fi
+
 # ---------------------------------------------------------------------------
 # LibreOfficeでExcel → PDF変換
 # ---------------------------------------------------------------------------
 echo "ExcelファイルをPDFに変換中: $INPUT_FILE"
-if ! libreoffice --headless --convert-to pdf --outdir "$WORK_DIR" "$INPUT_FILE"; then
+# LibreOffice は入力ファイル名に基づいて PDF を生成するため、
+# 一時ファイルを使用した場合は生成された PDF を期待のパスにリネームする
+CONVERT_PDF="${WORK_DIR}/$(basename "${CONVERT_FILE%.*}").pdf"
+if ! libreoffice --headless --convert-to pdf --outdir "$WORK_DIR" "$CONVERT_FILE"; then
     echo "エラー: PDF変換に失敗しました: $INPUT_FILE" >&2
     exit 1
 fi
 
 # 変換後のPDFが存在するか確認
-if [ ! -f "$PDF_OUTPUT" ]; then
-    echo "エラー: PDFファイルが生成されませんでした: $PDF_OUTPUT" >&2
+if [ ! -f "$CONVERT_PDF" ]; then
+    echo "エラー: PDFファイルが生成されませんでした: $CONVERT_PDF" >&2
     exit 1
+fi
+
+# 一時ファイルを使用した場合は期待のパスにリネーム
+if [[ "$CONVERT_PDF" != "$PDF_OUTPUT" ]]; then
+    mv "$CONVERT_PDF" "$PDF_OUTPUT"
 fi
 
 echo "PDF変換完了: $PDF_OUTPUT"

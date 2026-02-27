@@ -36,7 +36,22 @@
 | 一時出力PNG画像 | `{プロジェクトルート}/.github/work/{Excelファイル名（拡張子なし）}-{ページ番号}.png` |
 | 最終出力Markdown | `{プロジェクトルート}/.github/work/{Excelファイル名（拡張子なし）}.md` |
 
-## 視覚的解析によるMarkdown変換ガイドライン
+## 使用するスクリプト
+
+変換処理は `.github/scripts/excel-to-markdown.sh` で実行します。
+
+```bash
+# すべてのシートを変換する場合
+.github/scripts/excel-to-markdown.sh <Excelファイルパス>
+
+# 特定のシートのみを変換する場合（-s オプションを複数指定可能）
+.github/scripts/excel-to-markdown.sh -s "シート名1" -s "シート名2" <Excelファイルパス>
+```
+
+> **注意**: `-s` オプションによるシートフィルタリングは `.xlsx` 形式のみサポートしています。
+> また、`python3` と `openpyxl` が必要です（`pip install openpyxl`）。
+
+
 
 各ページ画像を視覚的に解析してMarkdownを生成する際は、以下のルールを適用する：
 
