@@ -61,7 +61,7 @@ export class MarkdownGenerator {
 
   private renderTable(node: TableNode): string {
     const escapeCell = (s: string): string =>
-      s.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+      s.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 
     const colCount = node.headers.length;
 
