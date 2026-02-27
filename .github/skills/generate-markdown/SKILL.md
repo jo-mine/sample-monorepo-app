@@ -94,7 +94,7 @@ npx ts-node .github/skills/generate-markdown/generate.ts <spec-data.json> <outpu
 |-----------|-----|------|
 | `cells` | `string[]` | 各列の値（ヘッダーと同数） |
 | `required` | `boolean?` | 赤文字（必須）の場合 `true` |
-| `level` | `number?` | 列インデント深さ（0=フラット, 1=1段深い,...）
+| `level` | `number?` | 列インデント深さ（0=フラット, 1=1段深い,...) |
 
 ## 出力Markdownの規則
 
