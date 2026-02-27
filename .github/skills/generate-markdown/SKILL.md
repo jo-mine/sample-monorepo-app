@@ -108,8 +108,8 @@ npx ts-node .github/skills/generate-markdown/generate.ts /path/to/spec-data.json
 
 ## システム概要
 
-- ✅ **システム名**: 受注管理システム
-- **バージョン**: 1.0.0
+  - ✅ **システム名**: 受注管理システム
+  - **バージョン**: 1.0.0
 ```
 
 ## エラーケース
