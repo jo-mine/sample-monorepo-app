@@ -61,10 +61,19 @@ for (const name of targets) {
   });
 
   // 結合セルの範囲をコピー
+  // ExcelJS の公開 API では結合範囲の一覧取得が提供されていないため、
+  // 内部モデルの merges プロパティを使用する（ExcelJS の内部構造変更に注意）
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const srcModel = (srcSheet as any).model;
   if (srcModel && Array.isArray(srcModel.merges)) {
     for (const mergeRange of srcModel.merges as string[]) {
-      dstSheet.mergeCells(mergeRange);
+      try {
+        dstSheet.mergeCells(mergeRange);
+      } catch (err) {
+        stderr.write(
+          `警告: 結合セル "${mergeRange}" のコピーに失敗しました: ${err instanceof Error ? err.message : String(err)}\n`,
+        );
+      }
     }
   }
 }

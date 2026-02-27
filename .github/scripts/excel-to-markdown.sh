@@ -105,6 +105,15 @@ if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
         echo "エラー: シートフィルタリングには node (v22 以上) が必要です。" >&2
         exit 1
     fi
+    NODE_MAJOR="$(node --version | sed 's/v//' | cut -d. -f1)"
+    if [[ "$NODE_MAJOR" -lt 22 ]]; then
+        echo "エラー: node v22 以上が必要です（現在: $(node --version)）。" >&2
+        exit 1
+    fi
+    if ! command -v npm &> /dev/null; then
+        echo "エラー: npm がインストールされていません。" >&2
+        exit 1
+    fi
     # exceljs が未インストールの場合は自動インストール
     if [ ! -d "${SCRIPT_DIR}/node_modules/exceljs" ]; then
         echo "exceljs をインストール中..."
