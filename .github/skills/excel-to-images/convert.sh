@@ -18,6 +18,13 @@ OUTPUT_DIR="$2"
 shift 2
 SHEETS=("$@")
 
+# 入力ファイルのパス検証：.xlsx または .xls 拡張子のみ許可（大文字小文字不問）
+INPUT_LOWER="${INPUT_PATH,,}"
+if [[ "$INPUT_LOWER" != *.xlsx && "$INPUT_LOWER" != *.xls ]]; then
+  echo "Error: Input file must be an Excel file (.xlsx or .xls): $INPUT_PATH" >&2
+  exit 1
+fi
+
 # シート名に制御文字が含まれていないか検証
 for sheet in "${SHEETS[@]}"; do
   if printf '%s' "$sheet" | grep -qP '[\x00-\x1f\x7f]'; then

@@ -20,6 +20,28 @@ interface FieldNode {
   level?: number;
 }
 
+/**
+ * 仕様テーブルの1行を表す。
+ * cells: テーブルの各セル値（No, 論理名/チェック対象, 物理名/チェック内容, 設定値/チェック詳細 など）
+ * required: 赤文字（必須項目）の場合 true
+ * level: 列インデントによる階層深さ（0=インデントなし, 1=1段深い, ...）
+ */
+interface SpecTableRow {
+  cells: string[];
+  required?: boolean;
+  level?: number;
+}
+
+/**
+ * 方眼紙設計書の入力仕様・出力仕様・バリデーションなど、仕様テーブルセクションを表す。
+ * 通常の table と異なり、各行に required / level メタデータを持つ。
+ */
+interface SpecTableNode {
+  type: "spec-table";
+  headers: string[];
+  rows: SpecTableRow[];
+}
+
 interface TableNode {
   type: "table";
   headers: string[];
@@ -38,7 +60,7 @@ interface SectionNode {
   children?: ContentNode[];
 }
 
-type ContentNode = FieldNode | TableNode | TextNode | SectionNode;
+type ContentNode = FieldNode | SpecTableNode | TableNode | TextNode | SectionNode;
 
 interface Sheet {
   name: string;
@@ -83,6 +105,41 @@ function renderNode(node: ContentNode): string {
       const prefix = node.required ? "✅ " : "";
       const indentStr = "  ".repeat(node.level ?? 0);
       return `${indentStr}- ${prefix}**${node.label}**: ${node.value}`;
+    }
+
+    case "spec-table": {
+      const { headers, rows } = node;
+      if (!headers || headers.length === 0 || !rows || rows.length === 0) {
+        return "";
+      }
+
+      const columnCount = headers.length;
+      const separator = Array(columnCount).fill("---").join(" | ");
+      const headerRow = headers.join(" | ");
+
+      const rowLines = rows.map((row) => {
+        const cells = row.cells.slice(0, columnCount);
+        // 列数をヘッダーに合わせて補完
+        while (cells.length < columnCount) cells.push("");
+
+        // 2列目（論理名・チェック対象など、仕様テーブルでは常に「表示名」列）に
+        // インデントと必須マーカーを適用する。全角スペースは日本語設計書での
+        // 視覚的インデント表現として標準的であり、Markdownテーブル内でも
+        // 空白折り畳みを受けずに階層を表現できる。
+        if (cells.length > 1) {
+          const indent = "　".repeat(row.level ?? 0);
+          const label = cells[1];
+          cells[1] = row.required ? `${indent}**✅ ${label}**` : `${indent}${label}`;
+        }
+
+        return cells.join(" | ");
+      });
+
+      return [
+        `| ${headerRow} |`,
+        `| ${separator} |`,
+        ...rowLines.map((r) => `| ${r} |`),
+      ].join("\n");
     }
 
     case "table": {

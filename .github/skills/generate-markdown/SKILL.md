@@ -30,20 +30,45 @@ npx ts-node .github/skills/generate-markdown/generate.ts <spec-data.json> <outpu
       "sections": [
         {
           "type": "section",
-          "title": "セクション名",
+          "title": "API:XXX（funcName）",
           "level": 0,
           "children": [
             {
-              "type": "field",
-              "label": "項目名",
-              "value": "値",
-              "required": true,
-              "level": 1
+              "type": "section",
+              "title": "1.入力仕様",
+              "level": 1,
+              "children": [
+                {
+                  "type": "spec-table",
+                  "headers": ["No", "論理名", "物理名", "設定値"],
+                  "rows": [
+                    { "cells": ["1", "必須項目", "requiredField", ""], "required": true, "level": 0 },
+                    { "cells": ["2", "子項目", "childField", ""], "level": 1 }
+                  ]
+                }
+              ]
             },
             {
-              "type": "table",
-              "headers": ["列1", "列2"],
-              "rows": [["値1", "値2"]]
+              "type": "section",
+              "title": "3.処理概要",
+              "level": 1,
+              "children": [
+                { "type": "text", "content": "処理の説明テキスト" }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "4.バリデーション",
+              "level": 1,
+              "children": [
+                {
+                  "type": "spec-table",
+                  "headers": ["No", "チェック対象", "チェック内容", "チェック詳細"],
+                  "rows": [
+                    { "cells": ["1", "項目.フィールド", "チェック種別", "詳細説明"] }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -58,15 +83,25 @@ npx ts-node .github/skills/generate-markdown/generate.ts <spec-data.json> <outpu
 | `type` 値 | 説明 |
 |-----------|------|
 | `"section"` | セクション見出し（`level` に応じてH2〜H4） |
+| `"spec-table"` | 方眼紙設計書の仕様テーブル（入力仕様・出力仕様・バリデーションなど）。各行に `required`/`level` メタデータを持つ |
 | `"field"` | キー・バリュー形式の項目（`level` はインデント深さを制御：0=インデントなし、1=スペース2つ、以降も同様） |
-| `"table"` | 表形式データ |
+| `"table"` | 汎用の表形式データ |
 | `"text"` | 自由テキスト |
+
+### `spec-table` 行のフィールド
+
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| `cells` | `string[]` | 各列の値（ヘッダーと同数） |
+| `required` | `boolean?` | 赤文字（必須）の場合 `true` |
+| `level` | `number?` | 列インデント深さ（0=フラット, 1=1段深い,...）
 
 ## 出力Markdownの規則
 
 - 各シートは `# シート名` (H1) で始まる
 - `section` の `level` に応じてH2〜H4の見出しを使用
-- `required: true` の項目は先頭に `✅` を付加
+- `spec-table` の `required: true` 行は論理名セルを `**✅ 論理名**` 形式でボールド＋アイコン表示
+- `spec-table` の `level > 0` 行は論理名セルに全角スペースでインデントを付加
 - テーブルはMarkdownテーブル記法で出力
 - 複数シートは連続して1つのMarkdownファイルに出力
 
@@ -82,20 +117,29 @@ npx ts-node .github/skills/generate-markdown/generate.ts /path/to/spec-data.json
 
 ## 出力例
 
-入力JSON：
+入力JSON（方眼紙設計書の入力仕様）：
 
 ```json
 {
   "sheets": [{
-    "name": "基本情報",
+    "name": "ユーザー一覧画面",
     "sections": [{
       "type": "section",
-      "title": "システム概要",
+      "title": "API:getUserList",
       "level": 0,
-      "children": [
-        { "type": "field", "label": "システム名", "value": "受注管理システム", "required": true, "level": 1 },
-        { "type": "field", "label": "バージョン", "value": "1.0.0", "required": false, "level": 1 }
-      ]
+      "children": [{
+        "type": "section",
+        "title": "1.入力仕様",
+        "level": 1,
+        "children": [{
+          "type": "spec-table",
+          "headers": ["No", "論理名", "物理名", "設定値"],
+          "rows": [
+            { "cells": ["1", "検索条件", "searchCondition", ""], "required": true, "level": 0 },
+            { "cells": ["2", "ユーザーID", "user_id", ""], "level": 1 }
+          ]
+        }]
+      }]
     }]
   }]
 }
@@ -104,12 +148,16 @@ npx ts-node .github/skills/generate-markdown/generate.ts /path/to/spec-data.json
 出力Markdown：
 
 ```markdown
-# 基本情報
+# ユーザー一覧画面
 
-## システム概要
+## API:getUserList
 
-  - ✅ **システム名**: 受注管理システム
-  - **バージョン**: 1.0.0
+### 1.入力仕様
+
+| No | 論理名 | 物理名 | 設定値 |
+| --- | --- | --- | --- |
+| 1 | **✅ 検索条件** | searchCondition |  |
+| 2 | 　ユーザーID | user_id |  |
 ```
 
 ## エラーケース
