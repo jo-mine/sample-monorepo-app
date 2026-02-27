@@ -18,12 +18,6 @@ OUTPUT_DIR="$2"
 shift 2
 SHEETS=("$@")
 
-# シート名が1つも指定されていない場合はエラー
-if [ ${#SHEETS[@]} -eq 0 ]; then
-  echo "Error: No sheet names specified. Please provide at least one sheet name." >&2
-  exit 1
-fi
-
 # 入力ファイルが存在しない場合はエラー
 if [ ! -f "$INPUT_PATH" ]; then
   echo "Error: Input file not found: $INPUT_PATH" >&2
