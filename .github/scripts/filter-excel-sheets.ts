@@ -59,6 +59,14 @@ for (const name of targets) {
     });
     dstRow.commit();
   });
+
+  // 結合セルの範囲をコピー
+  const srcModel = (srcSheet as any).model;
+  if (srcModel && Array.isArray(srcModel.merges)) {
+    for (const mergeRange of srcModel.merges as string[]) {
+      dstSheet.mergeCells(mergeRange);
+    }
+  }
 }
 
 await dstWorkbook.xlsx.writeFile(dstPath);
