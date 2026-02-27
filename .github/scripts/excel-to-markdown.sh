@@ -204,7 +204,7 @@ fi
 IMAGE_FILES=()
 while IFS= read -r -d '' img; do
     IMAGE_FILES+=("$img")
-done < <(find "$WORK_DIR" -name "${FILENAME}-*.png" -print0 | sort -z)
+done < <(find "$WORK_DIR" -name "${FILENAME}-*.png" -print0 | sort -z -V)
 
 if [ ${#IMAGE_FILES[@]} -eq 0 ]; then
     echo "エラー: ページ画像が生成されませんでした。" >&2
