@@ -1,0 +1,8 @@
+{
+  "name": "excel-to-markdown-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}

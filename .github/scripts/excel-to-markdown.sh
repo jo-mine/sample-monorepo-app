@@ -5,7 +5,7 @@
 # オプション:
 #   -s, --sheet <シート名>  変換対象のシートを指定する（複数指定可）
 #                           省略した場合はすべてのシートを変換する
-#                           ※ .xlsx ファイルのみサポート（python3 と openpyxl が必要）
+#                           ※ .xlsx ファイルのみサポート（node v22+ と exceljs が必要）
 #
 # 処理概要:
 #   1. LibreOfficeでExcel → PDF変換
@@ -93,6 +93,7 @@ fi
 # ---------------------------------------------------------------------------
 # シートフィルタリング使用時の追加確認
 # ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
     case "$INPUT_FILE" in
         *.xls)
@@ -100,14 +101,17 @@ if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
             exit 1
             ;;
     esac
-    if ! command -v python3 &> /dev/null; then
-        echo "エラー: シートフィルタリングには python3 が必要です。" >&2
+    if ! command -v node &> /dev/null; then
+        echo "エラー: シートフィルタリングには node (v22 以上) が必要です。" >&2
         exit 1
     fi
-    if ! python3 -c "import openpyxl" 2>/dev/null; then
-        echo "エラー: シートフィルタリングには openpyxl が必要です。" >&2
-        echo "インストール方法: pip install openpyxl" >&2
-        exit 1
+    # exceljs が未インストールの場合は自動インストール
+    if [ ! -d "${SCRIPT_DIR}/node_modules/exceljs" ]; then
+        echo "exceljs をインストール中..."
+        if ! npm install --prefix "${SCRIPT_DIR}" --silent; then
+            echo "エラー: exceljs のインストールに失敗しました。" >&2
+            exit 1
+        fi
     fi
 fi
 
@@ -148,30 +152,9 @@ CONVERT_FILE="$INPUT_FILE"
 if [[ ${#SHEET_NAMES[@]} -gt 0 ]]; then
     TEMP_XLSX="${TMPDIR:-/tmp}/excel-to-md-$$.xlsx"
     echo "シートフィルタリング中: ${SHEET_NAMES[*]}"
-    if ! python3 - "$INPUT_FILE" "$TEMP_XLSX" "${SHEET_NAMES[@]}" << 'PYEOF'
-import sys
-import openpyxl
-
-src_path = sys.argv[1]
-dst_path = sys.argv[2]
-targets  = sys.argv[3:]
-
-wb        = openpyxl.load_workbook(src_path)
-available = wb.sheetnames
-missing   = [s for s in targets if s not in available]
-
-if missing:
-    print(f"エラー: 指定されたシートが見つかりません: {', '.join(missing)}", file=sys.stderr)
-    print(f"利用可能なシート: {', '.join(available)}", file=sys.stderr)
-    sys.exit(1)
-
-for name in wb.sheetnames:
-    if name not in targets:
-        del wb[name]
-
-wb.save(dst_path)
-PYEOF
-    then
+    if ! node --experimental-strip-types \
+            "${SCRIPT_DIR}/filter-excel-sheets.ts" \
+            "$INPUT_FILE" "$TEMP_XLSX" "${SHEET_NAMES[@]}"; then
         echo "エラー: シートのフィルタリングに失敗しました。" >&2
         exit 1
     fi

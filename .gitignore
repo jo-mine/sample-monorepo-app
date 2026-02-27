@@ -36,3 +36,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # GitHub work directory - temporary PDF and PNG files (intermediate artifacts)
 .github/work/*.pdf
 .github/work/*.png
+
+# Dependencies for .github/scripts
+.github/scripts/node_modules
