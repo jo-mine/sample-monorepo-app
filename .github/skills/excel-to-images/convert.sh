@@ -82,7 +82,9 @@ echo "Converting PDF to PNG: $PDF_PATH" >&2
 libreoffice --headless --convert-to png --outdir "$OUTPUT_ABS" "$PDF_PATH" >&2
 
 # Step 3: 生成されたPNGファイルの一覧を収集（maxdepth 1 で直下のみ）
-mapfile -t IMAGE_PATHS < <(find "$OUTPUT_ABS" -maxdepth 1 -name "*.png" | sort)
+# 入力ファイルのベース名（BASENAME）をプレフィックスとして持つPNGのみを対象にすることで、
+# 出力ディレクトリ内の既存PNGが混入しないようにする
+mapfile -t IMAGE_PATHS < <(find "$OUTPUT_ABS" -maxdepth 1 -name "${BASENAME}"'*.png' | sort)
 
 # PNGが1つも生成されていない場合はエラー
 if [ ${#IMAGE_PATHS[@]} -eq 0 ]; then
