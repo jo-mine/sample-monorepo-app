@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "function_name": "ユーザー一覧画面",
+    "application": "admin",
+    "module": "user",
+    "created_at": "2026/02/27",
+    "updated_at": "2026/02/27"
+  },
+  "definitions": [
+    {
+      "type": "api",
+      "name": "ユーザーリスト取得",
+      "action": "getUserList",
+      "inputLayoutSpec": {
+        "searchCondition": {
+          "logical_name": "検索条件",
+          "notes": "",
+          "properties": {
+            "user_id": {
+              "logical_name": "ユーザーID",
+              "notes": ""
+            },
+            "user_name": {
+              "logical_name": "ユーザー名",
+              "notes": ""
+            },
+            "organization_key": {
+              "logical_name": "組織キー",
+              "notes": ""
+            }
+          }
+        },
+        "page_num": {
+          "logical_name": "ページ番号",
+          "notes": "デフォルト値:1"
+        }
+      },
+      "outputLayoutSpec": {
+        "userList": {
+          "logical_name": "ユーザーリスト",
+          "notes": "",
+          "properties": {
+            "user_id": {
+              "logical_name": "ユーザーID",
+              "notes": ""
+            },
+            "user_name": {
+              "logical_name": "ユーザー名",
+              "notes": ""
+            },
+            "organization_label": {
+              "logical_name": "組織ラベル",
+              "notes": ""
+            },
+            "auto_load_flg": {
+              "logical_name": "自動取込フラグ",
+              "notes": ""
+            }
+          }
+        },
+        "paginator": {
+          "logical_name": "ページネーター",
+          "notes": "",
+          "properties": {
+            "page_num": {
+              "logical_name": "ページ番号",
+              "notes": ""
+            },
+            "max_page_num": {
+              "logical_name": "最大ページ番号",
+              "notes": ""
+            }
+          }
+        }
+      },
+      "validations": [
+        {
+          "target_logical_name": "検索条件.ユーザーID",
+          "validation_type": "選択肢逸脱チェック",
+          "validation_details": "ユーザーマスタに存在するユーザーIDであること"
+        },
+        {
+          "target_logical_name": "検索条件.ユーザーID",
+          "validation_type": "排他チェック",
+          "validation_details": "ユーザーIDと組織キーは同時に設定不可能"
+        },
+        {
+          "target_logical_name": "検索条件.組織キー",
+          "validation_type": "選択肢逸脱チェック",
+          "validation_details": "組織マスタに存在する組織キーであること"
+        }
+      ]
+    }
+  ]
+}

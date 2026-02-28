@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Layout",
+  "description": "設計書から抽出したレイアウト定義JSON",
+  "type": "object",
+  "required": ["meta", "definitions"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "メタ情報",
+      "required": [
+        "function_name",
+        "application",
+        "module",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "function_name": {
+          "type": "string",
+          "description": "機能名"
+        },
+        "application": {
+          "type": "string",
+          "description": "アプリケーション名"
+        },
+        "module": {
+          "type": "string",
+          "description": "モジュール名"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "作成日時（YYYY/MM/DD形式）",
+          "pattern": "^\\d{4}/\\d{2}/\\d{2}$"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "更新日時（YYYY/MM/DD形式）",
+          "pattern": "^\\d{4}/\\d{2}/\\d{2}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "definitions": {
+      "type": "array",
+      "description": "エンドポイント定義の配列",
+      "items": {
+        "$ref": "#/$defs/Definition"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Definition": {
+      "type": "object",
+      "description": "エンドポイント定義",
+      "required": [
+        "type",
+        "name",
+        "action",
+        "inputLayoutSpec",
+        "outputLayoutSpec",
+        "validations"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "エンドポイントの種類",
+          "enum": ["api", "action"]
+        },
+        "name": {
+          "type": "string",
+          "description": "エンドポイントの論理名"
+        },
+        "action": {
+          "type": "string",
+          "description": "エンドポイントの物理名"
+        },
+        "inputLayoutSpec": {
+          "type": "object",
+          "description": "入力レイアウト仕様",
+          "additionalProperties": {
+            "$ref": "#/$defs/LayoutSpecNode"
+          }
+        },
+        "outputLayoutSpec": {
+          "type": "object",
+          "description": "出力レイアウト仕様",
+          "additionalProperties": {
+            "$ref": "#/$defs/LayoutSpecNode"
+          }
+        },
+        "validations": {
+          "type": "array",
+          "description": "バリデーションルールの配列",
+          "items": {
+            "$ref": "#/$defs/Validation"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LayoutSpecNode": {
+      "oneOf": [
+        { "$ref": "#/$defs/LayoutSpecLeaf" },
+        { "$ref": "#/$defs/LayoutSpecBranch" }
+      ]
+    },
+    "LayoutSpecLeaf": {
+      "type": "object",
+      "description": "末端項目（ILayoutSpecLeaf）",
+      "required": ["logical_name", "notes"],
+      "properties": {
+        "logical_name": {
+          "type": "string",
+          "description": "論理名"
+        },
+        "notes": {
+          "type": "string",
+          "description": "備考"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LayoutSpecBranch": {
+      "type": "object",
+      "description": "階層項目（ILayoutSpecBranch）",
+      "required": ["logical_name", "notes", "properties"],
+      "properties": {
+        "logical_name": {
+          "type": "string",
+          "description": "論理名"
+        },
+        "notes": {
+          "type": "string",
+          "description": "備考"
+        },
+        "properties": {
+          "type": "object",
+          "description": "子項目の定義",
+          "additionalProperties": {
+            "$ref": "#/$defs/LayoutSpecNode"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Validation": {
+      "type": "object",
+      "description": "バリデーションルール",
+      "required": [
+        "target_logical_name",
+        "validation_type",
+        "validation_details"
+      ],
+      "properties": {
+        "target_logical_name": {
+          "type": "string",
+          "description": "バリデーション対象の論理入力名（ドット区切りパス）"
+        },
+        "validation_type": {
+          "type": "string",
+          "description": "バリデーションの種類"
+        },
+        "validation_details": {
+          "type": "string",
+          "description": "バリデーションの詳細説明"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
