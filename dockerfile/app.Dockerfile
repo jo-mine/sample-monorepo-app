@@ -1,9 +1,7 @@
 FROM oven/bun:1.3
 
 RUN apt-get update && \
-    apt-get install -y git curl vim locales && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y git curl vim locales
 RUN locale-gen ja_JP.UTF-8
 ENV LANG ja_JP.UTF-8
 RUN printf '%s\n' \
@@ -13,3 +11,8 @@ RUN printf '%s\n' \
   'set fileformats=unix,dos,mac' \
   'set ambiwidth=double' \
   > /root/.vimrc
+
+RUN apt-get install -y libreoffice imagemagick
+
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
