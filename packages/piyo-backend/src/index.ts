@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import { hoge } from "@jo-mine/sample-micro-services-hoge";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
@@ -15,7 +14,7 @@ const app = new Hono()
     return c.json([
       { id: 1, name: "Alice" },
       { id: 2, name: "Bob" },
-      { id: 3, name: hoge() },
+      { id: 3, name: "Charlie" },
     ]);
   })
   .post(

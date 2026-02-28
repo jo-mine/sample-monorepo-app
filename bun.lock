@@ -11,7 +11,6 @@
       "name": "@jo-mine/piyo-backend",
       "dependencies": {
         "@hono/zod-validator": "^0.7.6",
-        "@jo-mine/sample-micro-services-hoge": "^0.0.3",
         "hono": "^4.11.9",
         "zod": "^4.3.6",
       },
@@ -25,7 +24,6 @@
     "packages/piyo-frontend": {
       "name": "piyo-frontend",
       "dependencies": {
-        "@jo-mine/sample-micro-services-hoge": "^0.0.3",
         "hono": "^4.11.9",
         "nuxt": "^4.3.1",
         "vue": "^3.5.28",
@@ -201,8 +199,6 @@
     "@jo-mine/anon-backend": ["@jo-mine/anon-backend@workspace:submodules/sample-dependency-app/packages/anon-backend"],
 
     "@jo-mine/piyo-backend": ["@jo-mine/piyo-backend@workspace:packages/piyo-backend"],
-
-    "@jo-mine/sample-micro-services-hoge": ["@jo-mine/sample-micro-services-hoge@0.0.3", "https://npm.pkg.github.com/download/@jo-mine/sample-micro-services-hoge/0.0.3/0a8710e16f07f9150b9e7ca78c44c5cfd8e3ee2d", { "peerDependencies": { "typescript": "^5" } }, "sha512-qdj77yZ2JRKTsu7eLH1Xl78y3fM/kmHVcga7tw1FbZIjLeKwjMAmnrAROPkW8knAUIC8Ib/clgZs4Sujc0SkJg=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
