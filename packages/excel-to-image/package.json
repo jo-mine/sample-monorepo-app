@@ -1,0 +1,14 @@
+{
+  "name": "@jo-mine/excel-to-image",
+  "type": "module",
+  "scripts": {
+    "build": "bun run clean && bun build src/excel_to_images.ts --compile --outfile dist/excel-to-images",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
