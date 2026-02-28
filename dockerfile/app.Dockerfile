@@ -13,6 +13,7 @@ RUN printf '%s\n' \
   > /root/.vimrc
 
 RUN apt-get install -y libreoffice imagemagick
+RUN apt-get install -y python3-openpyxl python3-pip
 
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
