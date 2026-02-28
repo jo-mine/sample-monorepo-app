@@ -19,7 +19,8 @@
 				"mhutchie.git-graph",
 				"Vue.volar",
 				"biomejs.biome",
-				"EditorConfig.EditorConfig"
+				"EditorConfig.EditorConfig",
+				"GitHub.vscode-pull-request-github"
 			]
 		}
 	}
