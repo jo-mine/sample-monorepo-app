@@ -1,0 +1,14 @@
+{
+  "name": "@jo-mine/pdf-to-image",
+  "type": "module",
+  "scripts": {
+    "build": "bun run clean && bun build src/pdf_to_images.ts --compile --outfile dist/pdf-to-images",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
