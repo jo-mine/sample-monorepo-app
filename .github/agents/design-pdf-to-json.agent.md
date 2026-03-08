@@ -1,7 +1,21 @@
 ---
-description: "設計書の画像ファイルを解析し、レイアウト定義JSONを生成するエージェント"
-name: design-to-json
+description: "設計書の画像ファイルを解析し、レイアウト定義JSONを生成するエージェント。設計書画像解析、レイアウト定義JSON化、API設計JSON化で使う。"
+name: design-pdf-to-json
 argument-hint: "設計書の画像ファイルを提供してください。"
+handoffs:
+    - label: API interface と validation を生成
+      agent: design-json-to-api
+      prompt: |-
+          直前のメッセージに含まれる Layout JSON を入力として扱い、packages/piyo-backend 向けの API インターフェースとパラメーターバリデーション定義を作成してください。
+
+          特に以下を実施してください。
+          - meta.application、meta.module、action から src/{application}/{module}/{action}.ts を生成する
+          - inputLayoutSpec からリクエスト型と Zod スキーマを作成する
+          - validations を Zod と Hono 向けの定義へ落とし込む
+          - outputLayoutSpec からレスポンス型を作成する
+          - 検索などの GET 系は query、登録・更新などの POST 系は form を既定にする
+          - Hono のルート登録までは行わず、API インターフェース生成に限定する
+      send: false
 tools:
     - vscode/getProjectSetupInfo
     - vscode/runCommand
