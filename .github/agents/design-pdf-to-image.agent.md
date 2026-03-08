@@ -2,7 +2,7 @@
 description: "設計書のPDFファイルをPNGに変換するエージェント"
 name: design-pdf-to-image
 argument-hint: "設計書のPDFファイルを提供してください。"
-user-invokable: false
+user-invocable: false
 tools:
     - vscode/runCommand
     - vscode/askQuestions

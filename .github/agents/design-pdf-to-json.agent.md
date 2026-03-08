@@ -23,6 +23,11 @@ tools:
     - web
     - todo
 agents: ["design-pdf-to-image", "design-image-to-json"]
+handoffs: 
+  - label: Implement from json
+    agent: design-json-to-api
+    prompt: 設計書から生成されたJSONをもとにAPI実装してください。
+    send: true
 ---
 
 # 設計書PDF→JSON変換エージェント
